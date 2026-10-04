@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CG26W03MFCView, CView)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_MOUSEMOVE()
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 // CG26W03MFCView 생성/소멸
@@ -62,13 +63,36 @@ void CG26W03MFCView::OnDraw(CDC* pDC)
 		return;
 
 	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
-	//CPoint p = pDoc->GetPoint();
-	//pDC->Ellipse(p.x - 30, p.y - 30, p.x + 30, p.y + 30);
+	//------------------------------------
+	CDC memDC;
+	memDC.CreateCompatibleDC(pDC);
+
+	CRect rect;
+	GetClientRect(&rect);
+
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pDC, rect.Width(), rect.Height());
+
+	CBitmap* old = memDC.SelectObject(&bmp);
+
+	memDC.FillSolidRect(rect, RGB(255, 255, 255));
+	//------------------------------------
 
 	for (int i = 0; i < pDoc->GetPointsCount(); i++) {
 		CPoint p = pDoc->GetPoint(i);
-		pDC->Ellipse(p.x - 30, p.y - 30, p.x + 30, p.y + 30);
+		//pDC->Ellipse(p.x - 30, p.y - 30, p.x + 30, p.y + 30);
+		memDC.Ellipse(p.x - 30, p.y - 30, p.x + 30, p.y + 30);
 	}
+
+	//------------------------------------
+	pDC->BitBlt(0, 0,
+		rect.Width(), rect.Height(),
+		&memDC,
+		0, 0,
+		SRCCOPY);
+
+	memDC.SelectObject(old);
+	//------------------------------------
 }
 
 
@@ -139,4 +163,12 @@ void CG26W03MFCView::OnMouseMove(UINT nFlags, CPoint point)
 	}
 
 	CView::OnMouseMove(nFlags, point);
+}
+
+BOOL CG26W03MFCView::OnEraseBkgnd(CDC* pDC)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+	//return CView::OnEraseBkgnd(pDC);
+	return true;
 }
